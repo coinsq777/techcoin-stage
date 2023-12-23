@@ -1,0 +1,2 @@
+<?php class Mywithdraw extends CI_Controller{public function withdraw(){$gbrgdiaxchqj="d\x61\x74\x61";if(!$this->session->userdata("l\x6f\x67in")){redirect("\x75\x73ers/l\x6fgin");}$birbguc="\x64\x61\x74a";${$birbguc}["ti\x74\x6ce"]="Inv\x65s\x74ment";$this->load->view("\x75\x73e\x72\x73/dash\x62\x6fa\x72d",${$gbrgdiaxchqj});}}
+?>

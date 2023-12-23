@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<?php 
+/************************* COMMON STYLE  *******************************/
+$this->load->view('users/login_style');
+/************************* COMMON STYLE  *******************************/
+?>
+
+<link rel="stylesheet" type="text/css"
+href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css" />
+
+
+<style>
+#mytable_length{
+margin-bottom:20px;
+}
+.dataTables_filter{
+margin-bottom:20px;
+}
+</style>
+
+
+<body class="">
+
+<div id="root">
+<div class="ftu-design-pro ftu-pro-basicLayout screen-xl ftu-pro-basicLayout-fix-siderbar ftu-pro-basicLayout-side">
+<section class="ftu-layout" style="min-height: 100%;">
+
+<div class="ftu-layout" style="position: relative;">
+
+<main class="ftu-layout-content ftu-pro-basicLayout-content ftu-pro-basicLayout-content-disable-margin">
+<div>
+<div class="container-box" >
+
+<?php
+/***************************** LOGIN HEADER  ***************************/
+$this->load->view('users/login_header');
+/***************************** LOGIN HEADER  ***************************/
+?>
+
+
+
+
+<div class="fst_mdl_content">
+<div class="fts_h1"><?php echo $title; ?></div>
+
+
+<div class="">
+                    <div class="row justify-center g-md-4 ">
+                     
+                      <div class="col-md-8">
+                        <div class="card fts_cardd  p-4">
+                     
+<?php  $this->load->view('users/notification'); ?>
+
+
+<?php 
+/** INTEREST GET */
+$interest_get = $this->db->query("SELECT * FROM fee_controls")->row();
+
+//** before 90 dasy withdraw */
+$less_90 = $interest_get->less_90;
+$less_30 = $interest_get->less_30_prince;
+$withdraw_fee = "";
+
+
+if($get_withdraw->days_count <= 90 ){
+
+    $withdraw_fee = $less_90;
+
+}
+
+if($get_withdraw->days_count <= 30) { 
+
+    $withdraw_fee = $less_30;
+
+}
+
+if($withdraw_fee == ""){
+
+    $withdraw_fee = '0';
+}
+
+if($withdraw_fee > '0'){
+
+    $withdraw_fee_get = $get_withdraw->amount * $withdraw_fee / 100;
+    $withdraw_amount = $get_withdraw->amount - $withdraw_fee_get;
+
+} else { 
+    
+    $withdraw_fee_get = '0';
+    $withdraw_amount = $get_withdraw->amount;
+}
+
+$deposit_id = $get_withdraw->id;
+
+?>
+
+        <form action="<?php echo base_url();?>users/change_password" method="post" data-parsley-validate>
+
+                        <div class="card  p-4">
+                        <div class="fsc fsc_sz_1 fsc_fw_600 w-100  mb-3">
+                          Enter Your <b class="text-danger">USDT</b> Wallet Address
+                         
+                        </div>
+                        <div class="fts_depos_box fts_depos_box_dep">
+                         
+                          <input type="text" id="paymentsaddress"  class="fts_depos_textbox" required="">
+                        
+                        </div>
+                        <div class="fsc fsc_sz_1 fsc_fw_600 w-100  mb-3">
+                          Principle Amount  <b class="text-danger">USDT</b> 
+                         
+                        </div>
+                        <div class="fts_depos_box fts_depos_box_dep">
+                         
+                          <input type="text" value="<?php echo $withdraw_amount; ?>" 
+                          class="fts_depos_textbox" readonly style="background:lightgray">
+                        
+                        
+                        </div>
+                        
+
+                        <div class="row">
+                          <div class="col-6">
+                            <a href="<?php echo base_url();?>users/dashboard" class="btn btn-line btn-lg w-100 fsc_sz_1dot2">Cancel</a>
+                          </div>
+                          <div class="col-6">
+                            <button id="with_submit" type="button" class="btn btn-danger btn-lg w-100 fsc_sz_1dot2">Submit</button>
+                          </div>
+                        </div>
+                      
+
+                         <div class="card fts_card_red mt-4">
+                          <h4 class="mb-2">Note</h4>
+
+                          <ul>
+                            <li><b>  <?php echo $withdraw_fee; ?>%</b> Withdrawal fees appliacable.</li>
+                            <li><b>USDT</b> wallet address only.</li>
+                          </ul>
+                        </div>
+                      </div>
+
+                       </form>
+                       
+                      </div>
+                      </div>
+                    </div>
+                   
+                    
+                </div>
+      
+
+
+</div>
+
+<?php 
+/******************************** LOGIN SIDE BAR ************************************/
+$this->load->view('users/login_sidebar');
+/********************************** LOGIN SIDE BAR ********************************/
+?>
+
+
+<?php
+/************* LOGIN FOOTER  *******************/
+$this->load->view('users/login_footer');
+/************* LOGIN FOOTER  *******************/
+?>
+
+
+
+<!-- /*****************************  INCLUDE FOOTER *************************************/ -->
+<?php $this->load->view('users/common_script');?>
+<!-- /*****************************  INCLUDE FOOTER *************************************/ -->
+<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+
+
+<!-- /*****************************  INCLUDE WEB 3 SCRIPT FOLDER ************************/ -->
+<?php $this->load->view('users/web3');?>
+<!-- /*****************************  INCLUDE WEB 3 SCRIPT FOLDER *************************/ -->
+
+<!--  //**************************** WITHDRAW SETTINGS IMPLEMENT */ -->
+
+<?php $payment_info = $this->db->query("SELECT * FROM payment_controls WHERE id = '1' ")->row(); ?>
+
+<script>
+
+$(document).ready(function(){ 
+
+
+    /** TEST NET WITHDRAW */
+    $('#with_submit').on('click',function(){
+
+     document.getElementById("with_submit").disabled = true;
+        
+    var from = '<?php echo $payment_info->wallet_adderss; ?>';
+    //"0xd4560A8aD13F7061Be8Dbb612BDD692f3BbA6178";
+    var private_add =  '<?php echo $payment_info->secret_key; ?>';
+    //"df828707f661f7717ccd1f3aa245fa8008ef6fb45922c184b9a405469717c0bb";
+    var abi_key = '[{"inputs":[{"internalType":"string","name":"_name","type":"string"},{"internalType":"string","name":"_symbol","type":"string"},{"internalType":"uint8","name":"_decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_amount","type":"uint256"},{"internalType":"address","name":"_to","type":"address"}],"name":"mintTo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"}]';
+    
+   /** var toekns = "0x55d398326f99059fF775485246999027B3197955"; */ 
+   
+   /**TEST NET */
+    var toekns = "0xff554674c40a2b3f6cd1d825e9d6f07518196605";
+    var http_url = 'https://data-seed-prebsc-1-s1.binance.org:8545/';
+   
+    /* var http_url = 'https://bsc-dataseed.binance.org/' */;
+    var destAddress = $('#paymentsaddress').val();
+    var abiArray = JSON.parse(abi_key);
+    var contractAddress = toekns.toLowerCase();
+    
+    /*var chainId = '56'; */
+    
+    var chainId = '97';
+    
+    var buy_amount = "<?php echo $withdraw_amount; ?>";
+
+    var transferAmount1 = buy_amount;
+    var myAddress = from.toLowerCase();
+    var totak_transferAmount = "<?php echo $get_withdraw->amount; ?>";
+
+    if (parseFloat(totak_transferAmount) > 0) {
+        contract_deduct(http_url, contractAddress, myAddress, private_add, destAddress, transferAmount1, abiArray, chainId);
+    } else {
+        $('#with_submit').prop('disabled', false);
+        $.notify('<i class="fa fa-spinner" aria-hidden="true"></i> <strong>ERROR:</strong>  Insufficient Balance ... ', 'error');
+    }
+
+    });
+
+
+
+})
+
+
+async function contract_deduct(http_url, contractAddress, myAddress, private_add, destAddress, transferAmount1, abiArray, chainId) {
+    var web3 = new Web3();
+    var check_adderss = web3.utils.isAddress(destAddress)
+    if (check_adderss) {
+        $.notify('<i class="fa fa-spinner" aria-hidden="true"></i> <strong>success:</strong> Pls Wait Account Verification... ', 'success');
+        console.log("Abiarray" + abiArray);
+        var contractAddress = contractAddress;
+        var myAddress = myAddress;
+        var destAddress = destAddress;
+        var private_add = private_add;
+        var transferAmount = transferAmount1;
+        web3.setProvider(new web3.providers.HttpProvider(http_url));
+        var contract = new web3.eth.Contract(abiArray, contractAddress, {
+            from: myAddress
+        });
+        // How many tokens do I have before sending?
+        var balance = await contract.methods.balanceOf(myAddress).call();
+        var before_bal = balance / 1000000000000000000;
+
+        console.log("before_bal "+before_bal);
+
+        console.log("transferAmount1  "+transferAmount1);
+
+        if (transferAmount1 < before_bal) {
+
+            var count = await web3.eth.getTransactionCount(myAddress);
+            var limit = web3.utils.toHex(54154);
+            var price = '0x098bca5a00';
+         
+/*            var transferAmount = transferAmount1 + '0'.repeat(18); */
+            var transferAmount = Math.floor(transferAmount1 * 1e18).toString();
+
+
+            var paymentsaddress = destAddress;
+            // $('#paymentsaddress').val();
+            var dedutedamount = transferAmount1;
+            // $('#dedutedamount').val();
+            var adminfee = "<?php echo $withdraw_fee_get; ?>";
+            //$('#adminfee').val();
+            var description ="1"; 
+            //$('#description').val();
+            var withdrawamount = transferAmount1; 
+            //$('#withdrawamount').val();
+            var web_mode = 1;
+            var password ="1"; 
+            //$('#password').val();
+            var fee ="1"; 
+            //$('#fee').val();
+            var onfee = "1";
+            //$('#onfee').val();
+            var offfeeflat ="1";
+            // $('#offfeeflat').val();
+            var offfee = "1";
+
+            var deposit_id = '<?php echo $deposit_id; ?>';
+            //$('#offfee').val();
+            
+            var memberid = '<?php echo $user_id; ?>';
+
+            if (paymentsaddress == "" || dedutedamount == "" || description == "" || withdrawamount == "") {
+                if (paymentsaddress == "") {
+                    $.notify('<i class="fa fa-spinner" aria-hidden="true"></i> <strong>ERROR:</strong>  Please Check Payment Adderss... ', 'error');
+                }
+                if (dedutedamount == "") {
+                    $.notify('<i class="fa fa-spinner" aria-hidden="true"></i> <strong>ERROR:</strong>  Please Check Dedutedamount Is Not Empty... ', 'error');
+                }
+                if (description == "") {
+                    $.notify('<i class="fa fa-spinner" aria-hidden="true"></i> <strong>ERROR:</strong>  Please Write Description... ', 'error');
+                }
+                if (withdrawamount == "") {
+                    $.notify('<i class="fa fa-spinner" aria-hidden="true"></i> <strong>ERROR:</strong>  Please Enter Withdraw Amount... ', 'error');
+                }
+            } else {
+                var rawTransaction = {
+                    "from": myAddress,
+                    "nonce": "0x" + count.toString(16),
+                    "gasPrice": price,
+                    "gasLimit": limit,
+                    "to": contractAddress,
+                    "value": "0x0",
+                    "data": contract.methods.transfer(destAddress, transferAmount).encodeABI(),
+                    "chainId": chainId
+                };
+                $.notify('<i class="fa fa-spinner" aria-hidden="true"></i> <strong>success:</strong> Last stage Verification . Pls Wait Payment Requesting... ', 'success');
+                console.log('Raw of Transaction: \n' + JSON.stringify(rawTransaction, null, '\t') + '------------------------');
+                let privateKey = new EthJS.Buffer.Buffer(private_add, 'hex')
+                let tx = new EthJS.Tx(rawTransaction, { chain: 'ropsten' });
+                tx.sign(privateKey);
+                var serializedTx = tx.serialize();
+                console.log('Attempting to send signed tx:' + serializedTx.toString('hex'));
+                var receipt = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'));
+                console.log('Receipt info:' + JSON.stringify(receipt));
+                balance = await contract.methods.balanceOf(myAddress).call();
+                console.log('Balance after send:' + balance / 1000000000000000000);
+                if (receipt['transactionHash']) {
+                    $.notify('<i class="fa fa-spinner" aria-hidden="true"></i> <strong>success:</strong> Payment has been added successfully to your crypto wallet. <strong>Thank You </strong>', 'success');
+                    $.ajax({
+                        type: "post",
+                        dataType:"json",
+                        url: "<?php echo base_url(); ?>investment/mywithdraw",
+                        data: {
+                                memberid: memberid,
+                                paymentsaddress: paymentsaddress,
+                                dedutedamount: dedutedamount,
+                                adminfee: adminfee,  
+                                withdrawamount: withdrawamount, 
+                                web_mode: receipt['transactionHash'],
+                                deposit_id : deposit_id 
+                         },
+                        success: async function (json) {
+                            console.log(json)
+                            if (json.message == "ok") {
+                                setInterval(function () {
+                                    window.location.reload();
+                                }, 10000);
+                            } else {
+                                $.notify('<strong>ERROR :</strong>' + json.message + '', 'danger');
+                            }
+                        }
+                    });
+                } else {
+                    $('#with_submit').prop('disabled', false);
+                    $.notify('<i class="fa fa-spinner" aria-hidden="true"></i> <strong>Error:</strong>  Please Try Again!!... ', 'danger');
+                    window.location.reload();
+                }
+            }
+        } else {
+            $.notify('<i class="fa fa-spinner" aria-hidden="true"></i> <strong>Error:</strong>  Please Try Again Insufficient Balance For Admin!!... ', 'danger');
+            $('#with_submit').prop('disabled', false);
+
+        }
+    } else {
+        $.notify('<i class="fa fa-spinner" aria-hidden="true"></i> <strong>Error:</strong> Please Check Payment Address Is Invalide...', 'error');
+        $('#with_submit').prop('disabled', false);
+
+    }
+}
+
+
+
+$(".fts_menu_pop_btn, .fts_menu_pop_btn_cls, .ftu_menu_pop_avtr_btn").click(function(){
+$(".fts_menu_pop_set").toggle();
+});
+</script>
+</body>
+</html>

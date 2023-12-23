@@ -1,0 +1,2 @@
+<?php class my404 extends CI_Controller{public function __construct(){parent::__construct();}public function index(){$this->data["t\x69\x74le"]="Pa\x67\x65\x20No\x74\x20\x46ou\x6e\x64";$this->load->view("\x75\x73\x65\x72s/pag\x65\x73/e\x72r\x6f\x72\x5f\x340\x34",$this->data);}}
+?>
